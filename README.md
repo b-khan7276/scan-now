@@ -25,7 +25,7 @@ This Bash script automates system auditing by installing and running various sec
     ```
 4. Run the script:
     ```bash
-    ./system_audit.sh
+    ./scan-now.sh
     ```
 5. Follow on-screen instructions if prompted for sudo password during execution.
 
