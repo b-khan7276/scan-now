@@ -21,7 +21,7 @@ This Bash script automates system auditing by installing and running various sec
 2. Navigate to the directory where the script (`system_audit.sh`) is located.
 3. Ensure the script has executable permissions:
     ```bash
-    chmod +x system_audit.sh
+    chmod +x scan-now.sh
     ```
 4. Run the script:
     ```bash
