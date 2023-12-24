@@ -32,7 +32,7 @@ This Bash script automates system auditing by installing and running various sec
 ## Output
 
 - The results of the system audit will be displayed in the terminal during execution.
-- Detailed audit logs will be saved to a file named `system_audit_results.txt` on the Desktop.
+- Detailed audit logs will be saved to a file named `system_audit_results.txt` & `system_audit_results.html` on the Desktop.
 
 ## Disclaimer
 
