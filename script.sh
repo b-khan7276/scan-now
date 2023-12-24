@@ -3,8 +3,9 @@
 # Programs to check and install if not found
 programs=("lynis" "tiger" "rkhunter" "ufw" "clamscan")
 
-# Output file path
-output_file="$HOME/Desktop/system_audit_results.txt"
+# Output file paths
+output_txt="$HOME/Desktop/system_audit_results.txt"
+output_html="$HOME/Desktop/system_audit_results.html"
 
 # Descriptions for each command and software
 descriptions=(
@@ -15,13 +16,24 @@ descriptions=(
     "ClamAV is an antivirus software. 'clamscan -r ~' scans the home directory recursively for viruses."
 )
 
+# Commands for running each program
+commands=(
+    "sudo lynis audit system"
+    "sudo tiger"
+    "sudo rkhunter --check --verbose"
+    "sudo ufw status verbose"
+    "clamscan -r ~ --verbose"
+)
+
 # Function to display descriptions
 display_descriptions() {
+    echo "Available Scans:"
     for ((i=0; i<${#programs[@]}; i++)); do
         echo "--------------------------------"
-        echo "${programs[i]}: ${descriptions[i]}"
-        echo "--------------------------------"
+        echo "$(($i+1))) ${programs[i]}: ${descriptions[i]}"
     done
+    echo "--------------------------------"
+    echo "0) Run all scans"
 }
 
 # Function to run a program and log output
@@ -30,11 +42,14 @@ run_and_log() {
     action=$2
 
     echo "--------------------------------"
-    echo "Running $program $action..."
-    echo "*********** $program ***********" >> "$output_file"
-    $program $action >> "$output_file" 2>&1
-    echo "--------------------------------" >> "$output_file"
-    echo "Completed $program $action"
+    echo "Running $program..."
+    echo "*********** $program ***********"
+    echo "--------------------------------"
+
+    eval "$action" | tee -a "$output_txt" | tee -a "$output_html"
+
+    echo "--------------------------------"
+    echo "Completed $program"
 }
 
 # Check and install programs if not found
@@ -45,36 +60,26 @@ for program in "${programs[@]}"; do
     fi
 done
 
-# Display descriptions before executing commands
+# Create HTML file with basic structure
+echo "<html><head><title>System Audit Results</title></head><body>" > "$output_html"
+
+# Display descriptions and get user input
 display_descriptions
+read -p "Choose a scan (0 for all): " choice
 
-# Run each program with specified action
-for program in "${programs[@]}"; do
-    case $program in
-        lynis)
-            run_and_log "sudo" "lynis audit system"
-            ;;
-        tiger)
-            run_and_log "sudo" "tiger"
-            ;;
-        rkhunter)
-            run_and_log "sudo" "rkhunter --check"
-            ;;
-        ufw)
-            display_descriptions
-            sudo ufw default deny incoming
-            sudo ufw default allow outgoing
-            sudo ufw enable
-            echo "UFW configured to deny all incoming connections and allow all outgoing connections."
-            echo "UFW configured to deny all incoming connections and allow all outgoing connections." >> "$output_file"
-            ;;
-        clamscan)
-            run_and_log "clamscan" "-r ~"
-            ;;
-        *)
-            echo "Unknown program: $program"
-            ;;
-    esac
-done
+# Run selected scan(s)
+if [ "$choice" -eq 0 ]; then
+    for ((i=0; i<${#programs[@]}; i++)); do
+        run_and_log "${programs[$i]}" "${commands[$i]}"
+    done
+elif [ "$choice" -ge 1 ] && [ "$choice" -le "${#programs[@]}" ]; then
+    index=$((choice-1))
+    run_and_log "${programs[$index]}" "${commands[$index]}"
+else
+    echo "Invalid choice."
+fi
 
-echo "Audit completed. Results saved to $output_file"
+# Close HTML file
+echo "</body></html>" >> "$output_html"
+
+echo "Audit completed. Results saved to $output_txt and $output_html"
